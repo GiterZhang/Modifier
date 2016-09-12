@@ -17,11 +17,15 @@ namespace Modifier
         [XmlElement]
         public bool ReadOnly { get; set; }
         [XmlElement]
-        public double MaxValue { get; set; }
+        public int MaxValue { get; set; }
         [XmlElement]
-        public double MinValue { get; set; }
+        public int MinValue { get; set; }
         [XmlElement]
         public int Size { get; set; }
+
+        //只有System.Binary才有的属性 起始位的位置
+        [XmlElement]
+        public int StartPlace { get; set; } 
         [XmlElement]
         public string FormStyle { get; set; }
 
@@ -66,6 +70,9 @@ namespace Modifier
 
                 switch (valueType.Name)
                 {
+                    case "Boolean":
+                        value_temp[instance.GetHashCode()] = APIHelper.ReadMemoryByBool(pid, address, instance.StartPlace);
+                        break;
                     case "Int32":
                         value_temp[instance.GetHashCode()] = APIHelper.ReadMemoryByInt32(pid, address);
                         break;
@@ -119,17 +126,29 @@ namespace Modifier
 
                     Type valueType = instance.GetValueType();
 
-                    //判断大小
+                    //若写的值为整形最大/小，则忽略
+                    if (int.Parse(value) == int.MaxValue || int.Parse(value) == int.MinValue) return;
 
-                    if(double.Parse(value) > double.MaxValue && double.Parse(value) < double.MinValue )
-                    {
-                        throw new Exception("值应该大于" + instance.MinValue + ",且小于" + instance.MaxValue);
+                    //判断大小
+                    if (instance.MaxValue != int.MaxValue || instance.MinValue != int.MinValue)
+                    { 
+                        if (int.Parse(value) > instance.MaxValue || int.Parse(value) < instance.MinValue)
+                        {
+                            throw new Exception("值应该大于" + instance.MinValue + ",且小于" + instance.MaxValue);
+                        }
                     }
+                    
 
                     switch (valueType.Name)
                     {
+                        case "Boolean":
+                            object obj = Boolean.Parse(value);
+
+                            APIHelper.WriteMemoryByBool(pid, address, instance.StartPlace, (Boolean)obj);
+                            value_temp[instance.GetHashCode()] = obj;
+                            break;
                         case "Int32":
-                            object obj = Int32.Parse(value);
+                            obj = Int32.Parse(value);
 
                             APIHelper.WriteMemoryByInt32(pid, address, (Int32)obj);
                             value_temp[instance.GetHashCode()] = obj;

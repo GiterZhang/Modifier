@@ -51,6 +51,7 @@ namespace Modifier
             }
 
         }
+
         private void InitApp()
         {
             tabControl.TabPages.RemoveAt(1);//删除测试页
@@ -103,6 +104,8 @@ namespace Modifier
                 //初始化页面
                 LoadPages(version.Pages);
                 currentStatusStrip.Text = "当前状态：加载完毕";
+
+                this.Text += "[" + version.VersionName +"]";
             }
             else
             {
@@ -131,7 +134,7 @@ namespace Modifier
             }
             catch (Exception ex)
             {
-                MessageBox.Show("读取文件失败");
+                MessageBox.Show("读取文件失败\n" + ex.Message);
                 Close();
             }
             return false;
@@ -170,7 +173,7 @@ namespace Modifier
             }          
         }
 
-        private List<DataGridViewRow> ReadItemsValue(List<FunctionItem> functionItems, bool isReload)
+        private List<DataGridViewRow> ReadItems(List<FunctionItem> functionItems, bool isReload)
         {
             List<DataGridViewRow> rows = new List<DataGridViewRow>();
             foreach (var item in functionItems)
@@ -178,7 +181,7 @@ namespace Modifier
                 DataGridViewRow row = new DataGridViewRow();
                 DataGridViewTextBoxCell name = new DataGridViewTextBoxCell();                
                 DataGridViewTextBoxCell errorText = new DataGridViewTextBoxCell();
-                DataGridViewCell value;
+                DataGridViewCell valueCell;
 
                 object itemValue = -1;//初始值                
 
@@ -196,30 +199,92 @@ namespace Modifier
                 switch (item.FormStyle)
                 {
                     case "文本框":
-                        value = new DataGridViewTextBoxCell();
-                        row.Cells.AddRange(new DataGridViewCell[] { name, value, errorText});
+                        valueCell = new DataGridViewTextBoxCell();
+                        row.Cells.AddRange(new DataGridViewCell[] { name, valueCell, errorText});
 
-                        value.Value = itemValue;
-                        value.ReadOnly = item.ReadOnly;
+                        valueCell.Value = itemValue;
+                        valueCell.ReadOnly = item.ReadOnly;
 
-                        if (value.ReadOnly)
+                        if (valueCell.ReadOnly)
                         {
-                            value.Style.BackColor = Color.WhiteSmoke;
+                            valueCell.Style.BackColor = Color.WhiteSmoke;
                         }
                         break;
-                    case "下拉列表":
-                        value = new DataGridViewComboBoxCell();
-                        row.Cells.AddRange(new DataGridViewCell[] { name, value, errorText });
 
-                        ((DataGridViewComboBoxCell)value).Items.AddRange(item.ValueStringMap.GetValueList().ToArray());
-                        ((DataGridViewComboBoxCell)value).Value = item.ValueStringMap.GetValue((int)itemValue);
+                    case "下拉列表":
+                        valueCell = new DataGridViewComboBoxCell();
+                        row.Cells.AddRange(new DataGridViewCell[] { name, valueCell, errorText });
+
+                        ((DataGridViewComboBoxCell)valueCell).Items.AddRange(item.ValueStringMap.GetValueList().ToArray());
+                        ((DataGridViewComboBoxCell)valueCell).Value = item.ValueStringMap.GetValue((int)itemValue);
                         break;
+
+                    case "单选框":
+                        valueCell = new DataGridViewCheckBoxCell();
+                        row.Cells.AddRange(new DataGridViewCell[] { name, valueCell, errorText });
+
+                        try
+                        {
+                            ((DataGridViewCheckBoxCell)valueCell).Value = (bool)itemValue;
+                        }
+                        catch { }
+                        
+
+                        break;
+
                 }
                 rows.Add(row);
                 
             }
             return rows;
         }   
+
+        private List<DataGridViewRow> WriteItems(List<FunctionItem> functionItems, string value)
+        {
+            List<DataGridViewRow> rows = ReadItems(functionItems, true);
+
+            int rowIndex = 0;
+            foreach (var item in functionItems)
+            {
+                if (!item.ReadOnly && item.FormStyle == "文本框")
+                {
+                    try
+                    {
+                        switch (value)
+                        {
+                            case "max":
+                                if (item.MaxValue != int.MaxValue)
+                                {
+                                    item.Write(item.MaxValue.ToString());
+                                }
+                                break;
+
+                            case "min":
+                                if (item.MaxValue != int.MinValue)
+                                {
+                                    item.Write(item.MinValue.ToString());
+                                }
+                                break;
+
+                            default:
+                                item.Write(value);
+                                break;
+                        }
+                        
+                    }
+                    catch (Exception ex)
+                    {
+                        rows[rowIndex].Cells[2].Value = ex.Message;
+                    }
+
+                    rows[rowIndex].Cells[1].Value = item.Read();
+                }
+                rowIndex++;
+            }
+
+            return rows;
+
+        }
 
         private void tabControl_Selected(object sender, TabControlEventArgs e)
         {
@@ -298,8 +363,27 @@ namespace Modifier
                             currentRow.Cells["errorText"].Value = ex.Message;
                         }
                         currentRow.Cells["value"].Value = item.ValueStringMap.GetValue((int)item.Read(false));
+                    }
+                    else if (item.FormStyle == "单选框")
+                    {
+                        string value = currentRow.Cells["value"].Value.ToString();
+                        try
+                        {
+                            item.Write(value);
+                        }
+                        catch (Exception ex)
+                        {
+                            currentRow.Cells["errorText"].Value = ex.Message;
+                        }
+                        currentRow.Cells["value"].Value = item.Read(false);
                     }           
                     WFlag = WFlag_Free;
+
+
+                    //每次修改数据就刷新列表
+                    backgroundWorker1.RunWorkerAsync(new FunctionBag { Items = version.Pages[PageIndex].Items, IsReload = true });
+
+                    WaitBox.Wait();//对话框中断等待
                 }
             }
         }
@@ -324,25 +408,88 @@ namespace Modifier
         private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
         {
             FunctionBag bag = (FunctionBag)(e.Argument);
-            bag.Rows = ReadItemsValue(bag.Items,bag.IsReload);
+            bag.Rows = ReadItems(bag.Items,bag.IsReload);
             e.Result = bag.Rows;
         }
 
         private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             //异步读取完读取行
+            WFlag = WFlag_Busy;
             LoadItems((List<DataGridViewRow>)e.Result);
+            WFlag = WFlag_Free;
+            //关闭读取框
+            WaitBox.Close();
+        }
+
+
+        //异步写内存
+        private void backgroundWorker2_DoWork(object sender, DoWorkEventArgs e)
+        {
+            FunctionBag bag = (FunctionBag)(e.Argument);
+            bag.Rows = WriteItems(bag.Items, bag.Value);
+            e.Result = bag.Rows;
+        }
+
+        private void backgroundWorker2_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            //异步写完内存读取行
+            WFlag = WFlag_Busy;
+            LoadItems((List<DataGridViewRow>)e.Result);
+            WFlag = WFlag_Free;
             //关闭读取框
             WaitBox.Close();
         }
 
         private void 刷新ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            WFlag = WFlag_Busy;
+            
             backgroundWorker1.RunWorkerAsync(new FunctionBag { Items = version.Pages[PageIndex].Items, IsReload = true });
 
             WaitBox.Wait();//对话框中断等待
-            WFlag = WFlag_Free;
+            
+        }
+
+        private void 全部最大值ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            backgroundWorker2.RunWorkerAsync(new FunctionBag { Items = version.Pages[PageIndex].Items, Value = "max"});
+
+            WaitBox.Wait();//对话框中断等待
+        }
+
+        private void 全部最小值ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            backgroundWorker2.RunWorkerAsync(new FunctionBag { Items = version.Pages[PageIndex].Items, Value = "min" });
+
+            WaitBox.Wait();//对话框中断等待
+        }
+
+        private void 全部设定值ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string value = Microsoft.VisualBasic.Interaction.InputBox("输入设定值");
+
+            if (value != "")
+            {
+                backgroundWorker2.RunWorkerAsync(new FunctionBag { Items = version.Pages[PageIndex].Items, Value = value });
+
+                WaitBox.Wait();//对话框中断等待
+            }
+                         
+        }
+
+        private void linkLabel1_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.Start("http://bbs.3dmgame.com/forum-1808-1.html");
+        }
+
+        private void linkLabel2_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.Start("http://tieba.baidu.com/f?kw=nba2k&fr=ala0&tpl=5");
+        }
+
+        private void linkLabel3_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.Start("http://bbs.3dmgame.com/forum-1808-1.html");
         }
     }
 
@@ -352,6 +499,7 @@ namespace Modifier
         public List<DataGridViewRow> Rows { get; set; }
         public List<FunctionItem> Items { get; set; }
 
+        public string Value { get; set; }
         public bool IsReload { get; set; }
     }
 }

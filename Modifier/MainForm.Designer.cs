@@ -37,9 +37,6 @@
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.gridView = new System.Windows.Forms.DataGridView();
-            this.function = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.value = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.errorText = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.contextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.刷新ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
@@ -58,6 +55,10 @@
             this.backgroundWorker = new System.ComponentModel.BackgroundWorker();
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.backgroundWorker2 = new System.ComponentModel.BackgroundWorker();
+            this.function = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.value = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.errorText = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.tabControl.SuspendLayout();
             this.tabPage2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.gridView)).BeginInit();
@@ -124,45 +125,6 @@
             this.gridView.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.gridView_CellEndEdit);
             this.gridView.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.gridView_CellValueChanged);
             // 
-            // function
-            // 
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle1.BackColor = System.Drawing.Color.White;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("微软雅黑", 10.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.Color.Black;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.White;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.Color.Black;
-            this.function.DefaultCellStyle = dataGridViewCellStyle1;
-            this.function.HeaderText = "功能";
-            this.function.Name = "function";
-            this.function.ReadOnly = true;
-            this.function.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.function.Width = 250;
-            // 
-            // value
-            // 
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("微软雅黑", 10.5F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.Color.Black;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.Gold;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.Color.Red;
-            this.value.DefaultCellStyle = dataGridViewCellStyle2;
-            this.value.HeaderText = "值";
-            this.value.Name = "value";
-            this.value.Width = 220;
-            // 
-            // errorText
-            // 
-            dataGridViewCellStyle3.Font = new System.Drawing.Font("微软雅黑", 10.5F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            dataGridViewCellStyle3.ForeColor = System.Drawing.Color.DarkRed;
-            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.Color.White;
-            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.Color.Red;
-            this.errorText.DefaultCellStyle = dataGridViewCellStyle3;
-            this.errorText.HeaderText = "提示";
-            this.errorText.Name = "errorText";
-            this.errorText.ReadOnly = true;
-            this.errorText.Width = 330;
-            // 
             // contextMenu
             // 
             this.contextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -191,18 +153,21 @@
             this.全部最大值ToolStripMenuItem.Name = "全部最大值ToolStripMenuItem";
             this.全部最大值ToolStripMenuItem.Size = new System.Drawing.Size(136, 22);
             this.全部最大值ToolStripMenuItem.Text = "全部最大值";
+            this.全部最大值ToolStripMenuItem.Click += new System.EventHandler(this.全部最大值ToolStripMenuItem_Click);
             // 
             // 全部最小值ToolStripMenuItem
             // 
             this.全部最小值ToolStripMenuItem.Name = "全部最小值ToolStripMenuItem";
             this.全部最小值ToolStripMenuItem.Size = new System.Drawing.Size(136, 22);
             this.全部最小值ToolStripMenuItem.Text = "全部最小值";
+            this.全部最小值ToolStripMenuItem.Click += new System.EventHandler(this.全部最小值ToolStripMenuItem_Click);
             // 
             // 全部设定值ToolStripMenuItem
             // 
             this.全部设定值ToolStripMenuItem.Name = "全部设定值ToolStripMenuItem";
             this.全部设定值ToolStripMenuItem.Size = new System.Drawing.Size(136, 22);
             this.全部设定值ToolStripMenuItem.Text = "全部设定值";
+            this.全部设定值ToolStripMenuItem.Click += new System.EventHandler(this.全部设定值ToolStripMenuItem_Click);
             // 
             // statusStrip
             // 
@@ -253,6 +218,7 @@
             this.linkLabel1.Name = "linkLabel1";
             this.linkLabel1.Size = new System.Drawing.Size(58, 21);
             this.linkLabel1.Text = "3dm论坛";
+            this.linkLabel1.Click += new System.EventHandler(this.linkLabel1_Click);
             // 
             // linkLabel2
             // 
@@ -260,6 +226,7 @@
             this.linkLabel2.Name = "linkLabel2";
             this.linkLabel2.Size = new System.Drawing.Size(68, 21);
             this.linkLabel2.Text = "nba2k贴吧";
+            this.linkLabel2.Click += new System.EventHandler(this.linkLabel2_Click);
             // 
             // linkLabel3
             // 
@@ -269,6 +236,7 @@
             this.linkLabel3.Name = "linkLabel3";
             this.linkLabel3.Size = new System.Drawing.Size(60, 21);
             this.linkLabel3.Text = "查看更新";
+            this.linkLabel3.Click += new System.EventHandler(this.linkLabel3_Click);
             // 
             // toolStripStatusLabel1
             // 
@@ -306,6 +274,52 @@
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox1.TabIndex = 3;
             this.pictureBox1.TabStop = false;
+            // 
+            // backgroundWorker2
+            // 
+            this.backgroundWorker2.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker2_DoWork);
+            this.backgroundWorker2.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker2_RunWorkerCompleted);
+            // 
+            // function
+            // 
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle1.BackColor = System.Drawing.Color.White;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("微软雅黑", 10.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            dataGridViewCellStyle1.ForeColor = System.Drawing.Color.Black;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.White;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.Color.Black;
+            this.function.DefaultCellStyle = dataGridViewCellStyle1;
+            this.function.HeaderText = "功能";
+            this.function.Name = "function";
+            this.function.ReadOnly = true;
+            this.function.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.function.Width = 250;
+            // 
+            // value
+            // 
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("微软雅黑", 10.5F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.Color.Black;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.Gold;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.Color.Red;
+            this.value.DefaultCellStyle = dataGridViewCellStyle2;
+            this.value.HeaderText = "值";
+            this.value.Name = "value";
+            this.value.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.value.Width = 220;
+            // 
+            // errorText
+            // 
+            dataGridViewCellStyle3.Font = new System.Drawing.Font("微软雅黑", 10.5F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            dataGridViewCellStyle3.ForeColor = System.Drawing.Color.DarkRed;
+            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.Color.White;
+            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.Color.Red;
+            this.errorText.DefaultCellStyle = dataGridViewCellStyle3;
+            this.errorText.HeaderText = "提示";
+            this.errorText.Name = "errorText";
+            this.errorText.ReadOnly = true;
+            this.errorText.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.errorText.Width = 330;
             // 
             // MainForm
             // 
@@ -345,9 +359,6 @@
         private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.DataGridView gridView;
         private System.ComponentModel.BackgroundWorker backgroundWorker;
-        private System.Windows.Forms.DataGridViewTextBoxColumn function;
-        private System.Windows.Forms.DataGridViewTextBoxColumn value;
-        private System.Windows.Forms.DataGridViewTextBoxColumn errorText;
         private System.Windows.Forms.ToolStripStatusLabel linkLabel1;
         private System.Windows.Forms.ToolStripStatusLabel linkLabel2;
         private System.Windows.Forms.ToolStripStatusLabel linkLabel3;
@@ -361,6 +372,10 @@
         private System.Windows.Forms.ToolStripMenuItem 全部最小值ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 全部设定值ToolStripMenuItem;
         private System.Windows.Forms.PictureBox pictureBox1;
+        private System.ComponentModel.BackgroundWorker backgroundWorker2;
+        private System.Windows.Forms.DataGridViewTextBoxColumn function;
+        private System.Windows.Forms.DataGridViewTextBoxColumn value;
+        private System.Windows.Forms.DataGridViewTextBoxColumn errorText;
     }
 }
 

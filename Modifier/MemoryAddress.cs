@@ -49,23 +49,33 @@ namespace Modifier
         public static long GetAddress(this MemoryAddress instance)
         {
             long addr = instance.Address;
-            if (instance.IsContainModuleAddr)
+            try
             {
-                addr += ModifierConfigEx.ProcessInfo.ModuleAddress;
-            }
-
-            if (instance.IsPtr)
-            {                
-                foreach (var offset in instance.Offsets)
+                if (instance.IsContainModuleAddr)
                 {
-                    addr = APIHelper.ReadMemoryByInt64(ModifierConfigEx.ProcessInfo.Pid, addr);
-                    addr += offset;
+                    addr += ModifierConfigEx.ProcessInfo.ModuleAddress;
                 }
 
-                if (instance.Offsets.Count == 0)
-                    addr = APIHelper.ReadMemoryByInt64(ModifierConfigEx.ProcessInfo.Pid, addr);
-            }                
-            instance.RealAddress = addr;
+                if (instance.IsPtr)
+                {
+                    foreach (var offset in instance.Offsets)
+                    {
+                        addr = APIHelper.ReadMemoryByInt64(ModifierConfigEx.ProcessInfo.Pid, addr);
+                        addr += offset;
+                    }
+
+                    if (instance.Offsets.Count == 0)
+                        addr = APIHelper.ReadMemoryByInt64(ModifierConfigEx.ProcessInfo.Pid, addr);
+                }
+                instance.RealAddress = addr;
+            }
+            catch (Exception ex)
+            {
+                string errorAddr = instance.GetAddrString(ModifierConfigEx.ProcessInfo.ModuleAddress.ToString());
+                throw new Exception("读取地址:" +　errorAddr + "错误");
+
+            }
+            
             return addr;         
         }
     }

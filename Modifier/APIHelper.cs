@@ -197,7 +197,7 @@ namespace Modifier
 
         public static bool WriteMemoryByByte(int pid, long addr, byte value)
         {
-            return WriteMemoryByBytes(pid, addr, System.BitConverter.GetBytes(value));
+            return WriteMemoryByBytes(pid, addr, new byte[] { value });
         }
         public static byte ReadMemoryByByte(int pid ,long addr)
         {
@@ -237,6 +237,39 @@ namespace Modifier
             }
             res = System.Text.Encoding.Unicode.GetString(bytes.ToArray());
             return res;
+        }
+
+        public static bool WriteMemoryByBool(int pid, long addr, int startPlace, bool value)
+        {
+            byte bit = ReadMemoryByByte(pid, addr);
+            if (value == true)
+            {
+                byte a = (byte)(1 << startPlace);
+                byte b = (byte)(bit | a);
+                WriteMemoryByByte(pid,addr,b);
+            }
+            else 
+            {
+                byte a = (byte)~(1 << startPlace);
+                byte b = (byte)(bit & a);
+                WriteMemoryByByte(pid, addr, b);
+            }
+            return false;
+        }
+        public static bool ReadMemoryByBool(int pid, long addr, int startPlace)
+        {
+            byte bit = ReadMemoryByByte(pid, addr);
+            int a = 1 << startPlace;
+            int b = bit & a;
+
+            if (b == a)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }            
         }
 
     }
