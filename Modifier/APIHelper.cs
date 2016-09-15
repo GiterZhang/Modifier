@@ -239,37 +239,40 @@ namespace Modifier
             return res;
         }
 
-        public static bool WriteMemoryByBool(int pid, long addr, int startPlace, bool value)
+        public static bool WriteMemoryByBinary(int pid, long addr, int startPlace, int size, long value)
         {
-            byte bit = ReadMemoryByByte(pid, addr);
-            if (value == true)
+            long originalNum = ReadMemoryByInt64(pid, addr);
+            long marks = 0;//设置掩码
+            for (int i = 0; i < size; i++)
             {
-                byte a = (byte)(1 << startPlace);
-                byte b = (byte)(bit | a);
-                WriteMemoryByByte(pid,addr,b);
+                marks = marks << 1;
+                marks++;
             }
-            else 
-            {
-                byte a = (byte)~(1 << startPlace);
-                byte b = (byte)(bit & a);
-                WriteMemoryByByte(pid, addr, b);
-            }
+            marks <<= startPlace;//置掩码起始位
+            marks = ~marks;//掩码取反
+
+            originalNum &= marks; //写位置零
+
+            long res = originalNum | (value << startPlace);
+
+            WriteMemoryByInt64(pid, addr, res);
+
             return false;
         }
-        public static bool ReadMemoryByBool(int pid, long addr, int startPlace)
+        public static long ReadMemoryByBinary(int pid, long addr, int startPlace, int size)
         {
-            byte bit = ReadMemoryByByte(pid, addr);
-            int a = 1 << startPlace;
-            int b = bit & a;
-
-            if (b == a)
+            long originalNum = ReadMemoryByInt64(pid, addr);
+            long marks = 0;//设置掩码
+            for (int i = 0; i < size; i++)
             {
-                return true;
+                marks = marks << 1;
+                marks++;
             }
-            else
-            {
-                return false;
-            }            
+            marks <<= startPlace;//置掩码起始位
+
+            long res = (originalNum & marks) >> startPlace; //与掩码进行与运算，并使数字归位
+            return res;
+               
         }
 
     }

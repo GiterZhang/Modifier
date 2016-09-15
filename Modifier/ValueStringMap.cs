@@ -62,7 +62,7 @@ namespace Modifier
             }
             return key;
         }
-        public string GetValue(int key)
+        public string GetValue(long key)
         {
             string value = "";
             foreach (var unit in GetMap())

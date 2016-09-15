@@ -216,7 +216,7 @@ namespace Modifier
                         row.Cells.AddRange(new DataGridViewCell[] { name, valueCell, errorText });
 
                         ((DataGridViewComboBoxCell)valueCell).Items.AddRange(item.ValueStringMap.GetValueList().ToArray());
-                        ((DataGridViewComboBoxCell)valueCell).Value = item.ValueStringMap.GetValue((int)itemValue);
+                        ((DataGridViewComboBoxCell)valueCell).Value = item.ValueStringMap.GetValue((long)itemValue);
                         break;
 
                     case "单选框":
@@ -225,7 +225,14 @@ namespace Modifier
 
                         try
                         {
-                            ((DataGridViewCheckBoxCell)valueCell).Value = (bool)itemValue;
+                            if ((long)itemValue == 1)
+                            {
+                                ((DataGridViewCheckBoxCell)valueCell).Value = true;
+                            }
+                            else if ((long)itemValue == 1)
+                            {
+                                ((DataGridViewCheckBoxCell)valueCell).Value = false;
+                            }
                         }
                         catch { }
                         
@@ -369,7 +376,15 @@ namespace Modifier
                         string value = currentRow.Cells["value"].Value.ToString();
                         try
                         {
-                            item.Write(value);
+                            if (value.ToLower() == "true")
+                            {
+                                item.Write("1");
+                            }
+                            else if(value.ToLower() == "false")
+                            {
+                                item.Write("0");
+                            }
+                            
                         }
                         catch (Exception ex)
                         {

@@ -70,8 +70,8 @@ namespace Modifier
 
                 switch (valueType.Name)
                 {
-                    case "Boolean":
-                        value_temp[instance.GetHashCode()] = APIHelper.ReadMemoryByBool(pid, address, instance.StartPlace);
+                    case "Int64":
+                        value_temp[instance.GetHashCode()] = APIHelper.ReadMemoryByBinary(pid, address, instance.StartPlace, instance.Size);
                         break;
                     case "Int32":
                         value_temp[instance.GetHashCode()] = APIHelper.ReadMemoryByInt32(pid, address);
@@ -141,10 +141,10 @@ namespace Modifier
 
                     switch (valueType.Name)
                     {
-                        case "Boolean":
-                            object obj = Boolean.Parse(value);
+                        case "Int64":
+                            object obj = Int64.Parse(value);
 
-                            APIHelper.WriteMemoryByBool(pid, address, instance.StartPlace, (Boolean)obj);
+                            APIHelper.WriteMemoryByBinary(pid, address, instance.StartPlace, instance.Size, (Int64)obj);
                             value_temp[instance.GetHashCode()] = obj;
                             break;
                         case "Int32":
