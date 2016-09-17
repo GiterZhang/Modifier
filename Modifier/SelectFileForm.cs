@@ -59,7 +59,7 @@ namespace Modifier
         private static SelectFileForm frm;
         public static string SelectFile(string startupPath, string searchPattern, SearchOption searchOption)
         {            
-            string[] files = System.IO.Directory.GetFiles(startupPath, searchPattern, searchOption);
+            string[] files = Directory.GetFiles(startupPath, searchPattern, searchOption);
             if (files .Length > 0)
             {
                 if (files.Length == 1)

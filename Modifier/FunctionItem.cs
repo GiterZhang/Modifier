@@ -38,12 +38,22 @@ namespace Modifier
     }
     public static class FunctionItemEx
     {
-        //public string LastErrorInfo { get; set; }
         private static Dictionary<int, object> value_temp = new Dictionary<int, object>();
+        private static Dictionary<int, string> lastError = new Dictionary<int, string>();
 
         public static Type GetValueType(this FunctionItem instance)
         { 
             return Type.GetType(instance.ValueType);
+        }
+
+        public static string GetErrorText(this FunctionItem instance)
+        {
+            if (lastError.ContainsKey(instance.GetHashCode()))
+            {
+                return lastError[instance.GetHashCode()];
+            }
+            return "";
+            
         }
 
         public static object Read(this FunctionItem instance, bool isReload = false)
@@ -51,6 +61,10 @@ namespace Modifier
             if (value_temp.ContainsKey(instance.GetHashCode()) != true)
             {
                 value_temp.Add(instance.GetHashCode(), null);
+            }
+            if (lastError.ContainsKey(instance.GetHashCode()) != true)
+            {
+                lastError.Add(instance.GetHashCode(),"");
             }
 
             if (!isReload)
@@ -86,7 +100,7 @@ namespace Modifier
                         break;
 
                     case "Double":
-                        value_temp[instance.GetHashCode()] = (double)APIHelper.ReadMemoryByInt64(pid, address);
+                        value_temp[instance.GetHashCode()] = APIHelper.ReadMemoryByDouble(pid, address);
                         break;
 
                     case "Single":
@@ -103,17 +117,27 @@ namespace Modifier
 
                     default:
                         break;
-                }             
+                }
+                //读取成功，错误信息清除
+                lastError[instance.GetHashCode()] = "";             
             }
             catch (Exception ex)
             {
                 value_temp[instance.GetHashCode()] = -1;
-                throw ex;
+                lastError[instance.GetHashCode()] = ex.Message;
             }
             return value_temp[instance.GetHashCode()];
         }
         public static void Write(this FunctionItem instance, string value)
         {
+            if (value_temp.ContainsKey(instance.GetHashCode()) != true)
+            {
+                value_temp.Add(instance.GetHashCode(), null);
+            }
+            if (lastError.ContainsKey(instance.GetHashCode()) != true)
+            {
+                lastError.Add(instance.GetHashCode(), "");
+            }
             //读取成功之后改写这个value_temp
             //value_temp = value;
             //写内存
@@ -127,12 +151,12 @@ namespace Modifier
                     Type valueType = instance.GetValueType();
 
                     //若写的值为整形最大/小，则忽略
-                    if (int.Parse(value) == int.MaxValue || int.Parse(value) == int.MinValue) return;
+                    if (double.Parse(value) == int.MaxValue || double.Parse(value) == int.MinValue) return;
 
                     //判断大小
                     if (instance.MaxValue != int.MaxValue || instance.MinValue != int.MinValue)
                     { 
-                        if (int.Parse(value) > instance.MaxValue || int.Parse(value) < instance.MinValue)
+                        if (double.Parse(value) > instance.MaxValue || double.Parse(value) < instance.MinValue)
                         {
                             throw new Exception("值应该大于" + instance.MinValue + ",且小于" + instance.MaxValue);
                         }
@@ -172,7 +196,7 @@ namespace Modifier
                         case "Double":
                             obj = Double.Parse(value);
 
-                            APIHelper.WriteMemoryByInt64(pid, address, (double)obj);
+                            APIHelper.WriteMemoryByDouble(pid, address, (double)obj);
                             value_temp[instance.GetHashCode()] = obj;
 
                             break;
@@ -196,10 +220,13 @@ namespace Modifier
                         default:
                             break;
                     }
+                    //写成功，清除错误信息
+                    lastError[instance.GetHashCode()] = "";
                 }
                 catch (Exception ex)
                 {
-                    throw ex;
+                    lastError[instance.GetHashCode()] = ex.Message;
+                    //throw ex;
                 }
                              
             }

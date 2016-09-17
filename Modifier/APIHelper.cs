@@ -141,7 +141,17 @@ namespace Modifier
             return GetProcessModule(processName, moduleName).BaseAddress.ToInt64();
         }
 
-        public static bool WriteMemoryByInt64(int pid, long addr, double value)
+        public static bool WriteMemoryByDouble(int pid, long addr, double value)
+        {
+            return WriteMemoryByBytes(pid, addr, System.BitConverter.GetBytes(value));
+        }
+        public static double ReadMemoryByDouble(int pid, long addr)
+        {
+            byte[] res = ReadMemoryByBytes(pid, addr, sizeof(double));
+            return BitConverter.ToInt64(res, 0);
+        }
+
+        public static bool WriteMemoryByInt64(int pid, long addr, long value)
         {
             return WriteMemoryByBytes(pid, addr, System.BitConverter.GetBytes(value));
         }

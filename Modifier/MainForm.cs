@@ -74,6 +74,12 @@ namespace Modifier
             versionLabel.Text = "版本号：" + Application.ProductVersion;
             currentStatusStrip.Text = "当前状态：正在加载";
 
+            //设置主页
+            if (File.Exists("index.htm"))
+            {
+                webBrowser.Url = new Uri("file://" +　Application.StartupPath + "/index.htm");
+            }
+
             //开始监视进程
             backgroundWorker.RunWorkerAsync();
             currentStatusStrip.Text = "当前状态：等待程序运行";
@@ -113,6 +119,9 @@ namespace Modifier
                 MessageBox.Show("版本匹配失败,没有合适的版本");
                 Close();
             }
+
+            moduleStausLabel.ForeColor = Color.DarkGreen;
+            moduleStausLabel.Text = modifierConfig.ProcessName + "正在运行";
 
         }
 
@@ -187,15 +196,10 @@ namespace Modifier
 
                 name.Value = item.Name;
 
-                try
-                {
-                    itemValue = item.Read(isReload);
-                }
-                catch (Exception ex)
-                {
-                    errorText.Value = ex.Message;
-                }
-                                               
+                itemValue = item.Read(isReload);
+
+                errorText.Value = item.GetErrorText();
+
                 switch (item.FormStyle)
                 {
                     case "文本框":
@@ -229,7 +233,7 @@ namespace Modifier
                             {
                                 ((DataGridViewCheckBoxCell)valueCell).Value = true;
                             }
-                            else if ((long)itemValue == 1)
+                            else
                             {
                                 ((DataGridViewCheckBoxCell)valueCell).Value = false;
                             }
@@ -255,34 +259,28 @@ namespace Modifier
             {
                 if (!item.ReadOnly && item.FormStyle == "文本框")
                 {
-                    try
+                    switch (value)
                     {
-                        switch (value)
-                        {
-                            case "max":
-                                if (item.MaxValue != int.MaxValue)
-                                {
-                                    item.Write(item.MaxValue.ToString());
-                                }
-                                break;
+                        case "max":
+                            if (item.MaxValue != int.MaxValue)
+                            {
+                                item.Write(item.MaxValue.ToString());
+                            }
+                            break;
 
-                            case "min":
-                                if (item.MaxValue != int.MinValue)
-                                {
-                                    item.Write(item.MinValue.ToString());
-                                }
-                                break;
+                        case "min":
+                            if (item.MaxValue != int.MinValue)
+                            {
+                                item.Write(item.MinValue.ToString());
+                            }
+                            break;
 
-                            default:
-                                item.Write(value);
-                                break;
-                        }
+                        default:
+                            item.Write(value);
+                            break;
+                    }
                         
-                    }
-                    catch (Exception ex)
-                    {
-                        rows[rowIndex].Cells[2].Value = ex.Message;
-                    }
+                    rows[rowIndex].Cells[2].Value = item.GetErrorText();
 
                     rows[rowIndex].Cells[1].Value = item.Read();
                 }
@@ -333,7 +331,9 @@ namespace Modifier
                     
                     FunctionItem item = version.Pages[PageIndex].Items[rowIndex];
                     DataGridViewRow currentRow = gridView.Rows[rowIndex];
-                  
+                    string errorText = "";
+
+
                     WFlag = WFlag_Busy;
                     if (item.FormStyle == "文本框")
                     {
@@ -343,62 +343,43 @@ namespace Modifier
                             value = currentRow.Cells["value"].Value.ToString();
                         }
 
-                        try
-                        {
-                            item.Write(value);
-                            
-                        }
-                        catch (Exception ex)
-                        {                           
-                            currentRow.Cells["errorText"].Value = ex.Message;
-                        }
-                        currentRow.Cells["value"].Value = item.Read(false);
+                        item.Write(value);
+                        errorText = item.GetErrorText();
+
                     }
                     else if (item.FormStyle == "下拉列表")
                     {
                         string str = currentRow.Cells["value"].Value.ToString();
                         int key = item.ValueStringMap.GetKey(str);
-                        try
+
+                        if (key != -1)
                         {
-                            if (key != -1)
-                            {
-                                item.Write(key.ToString());
-                            }
+                            item.Write(key.ToString());
                         }
-                        catch (Exception ex)
-                        {
-                            currentRow.Cells["errorText"].Value = ex.Message;
-                        }
-                        currentRow.Cells["value"].Value = item.ValueStringMap.GetValue((int)item.Read(false));
+
+                        errorText = item.GetErrorText();
                     }
                     else if (item.FormStyle == "单选框")
                     {
                         string value = currentRow.Cells["value"].Value.ToString();
-                        try
+                        if (value.ToLower() == "true")
                         {
-                            if (value.ToLower() == "true")
-                            {
-                                item.Write("1");
-                            }
-                            else if(value.ToLower() == "false")
-                            {
-                                item.Write("0");
-                            }
-                            
+                            item.Write("1");
                         }
-                        catch (Exception ex)
+                        else if(value.ToLower() == "false")
                         {
-                            currentRow.Cells["errorText"].Value = ex.Message;
+                            item.Write("0");
                         }
-                        currentRow.Cells["value"].Value = item.Read(false);
-                    }           
-                    WFlag = WFlag_Free;
-
+                        errorText = item.GetErrorText();
+                    }                              
 
                     //每次修改数据就刷新列表
                     backgroundWorker1.RunWorkerAsync(new FunctionBag { Items = version.Pages[PageIndex].Items, IsReload = true });
 
-                    WaitBox.Wait();//对话框中断等待
+                    WaitBox.Wait();//对话框中断等待                    
+                    WFlag = WFlag_Free;
+
+                    gridView.Rows[rowIndex].Cells[2].Value = errorText;
                 }
             }
         }
@@ -488,8 +469,7 @@ namespace Modifier
                 backgroundWorker2.RunWorkerAsync(new FunctionBag { Items = version.Pages[PageIndex].Items, Value = value });
 
                 WaitBox.Wait();//对话框中断等待
-            }
-                         
+            }                        
         }
 
         private void linkLabel1_Click(object sender, EventArgs e)
@@ -504,7 +484,17 @@ namespace Modifier
 
         private void linkLabel3_Click(object sender, EventArgs e)
         {
-            System.Diagnostics.Process.Start("http://bbs.3dmgame.com/forum-1808-1.html");
+            System.Diagnostics.Process.Start("http://bbs.3dmgame.com/thread-5281142-1-1.html");
+        }
+
+        private void aboutLabel_Click(object sender, EventArgs e)
+        {
+            new AboutForm().ShowDialog();
+        }
+
+        private void MainForm_Shown(object sender, EventArgs e)
+        {
+            new AboutForm().ShowDialog();
         }
     }
 

@@ -35,8 +35,12 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.tabControl = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.webBrowser = new System.Windows.Forms.WebBrowser();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.gridView = new System.Windows.Forms.DataGridView();
+            this.function = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.value = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.errorText = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.contextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.刷新ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
@@ -56,10 +60,8 @@
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.backgroundWorker2 = new System.ComponentModel.BackgroundWorker();
-            this.function = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.value = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.errorText = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.tabControl.SuspendLayout();
+            this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.gridView)).BeginInit();
             this.contextMenu.SuspendLayout();
@@ -81,12 +83,23 @@
             // 
             // tabPage1
             // 
+            this.tabPage1.Controls.Add(this.webBrowser);
             this.tabPage1.Location = new System.Drawing.Point(4, 28);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Size = new System.Drawing.Size(813, 438);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "主页";
             this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // webBrowser
+            // 
+            this.webBrowser.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.webBrowser.Location = new System.Drawing.Point(0, 0);
+            this.webBrowser.MinimumSize = new System.Drawing.Size(20, 20);
+            this.webBrowser.Name = "webBrowser";
+            this.webBrowser.Size = new System.Drawing.Size(813, 438);
+            this.webBrowser.TabIndex = 0;
+            this.webBrowser.Url = new System.Uri("", System.UriKind.Relative);
             // 
             // tabPage2
             // 
@@ -124,6 +137,47 @@
             this.gridView.CellBeginEdit += new System.Windows.Forms.DataGridViewCellCancelEventHandler(this.gridView_CellBeginEdit);
             this.gridView.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.gridView_CellEndEdit);
             this.gridView.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.gridView_CellValueChanged);
+            // 
+            // function
+            // 
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle1.BackColor = System.Drawing.Color.White;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("微软雅黑", 10.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            dataGridViewCellStyle1.ForeColor = System.Drawing.Color.Black;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.White;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.Color.Black;
+            this.function.DefaultCellStyle = dataGridViewCellStyle1;
+            this.function.HeaderText = "功能";
+            this.function.Name = "function";
+            this.function.ReadOnly = true;
+            this.function.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.function.Width = 250;
+            // 
+            // value
+            // 
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("微软雅黑", 10.5F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.Color.Black;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.Gold;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.Color.Red;
+            this.value.DefaultCellStyle = dataGridViewCellStyle2;
+            this.value.HeaderText = "值";
+            this.value.Name = "value";
+            this.value.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.value.Width = 220;
+            // 
+            // errorText
+            // 
+            dataGridViewCellStyle3.Font = new System.Drawing.Font("微软雅黑", 10.5F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            dataGridViewCellStyle3.ForeColor = System.Drawing.Color.DarkRed;
+            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.Color.White;
+            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.Color.Red;
+            this.errorText.DefaultCellStyle = dataGridViewCellStyle3;
+            this.errorText.HeaderText = "提示";
+            this.errorText.Name = "errorText";
+            this.errorText.ReadOnly = true;
+            this.errorText.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.errorText.Width = 330;
             // 
             // contextMenu
             // 
@@ -252,8 +306,9 @@
             this.aboutLabel.BorderStyle = System.Windows.Forms.Border3DStyle.SunkenInner;
             this.aboutLabel.IsLink = true;
             this.aboutLabel.Name = "aboutLabel";
-            this.aboutLabel.Size = new System.Drawing.Size(32, 21);
-            this.aboutLabel.Text = "关于";
+            this.aboutLabel.Size = new System.Drawing.Size(66, 21);
+            this.aboutLabel.Text = "关于&&捐赠";
+            this.aboutLabel.Click += new System.EventHandler(this.aboutLabel_Click);
             // 
             // backgroundWorker
             // 
@@ -280,47 +335,6 @@
             this.backgroundWorker2.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker2_DoWork);
             this.backgroundWorker2.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker2_RunWorkerCompleted);
             // 
-            // function
-            // 
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle1.BackColor = System.Drawing.Color.White;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("微软雅黑", 10.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.Color.Black;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.White;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.Color.Black;
-            this.function.DefaultCellStyle = dataGridViewCellStyle1;
-            this.function.HeaderText = "功能";
-            this.function.Name = "function";
-            this.function.ReadOnly = true;
-            this.function.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.function.Width = 250;
-            // 
-            // value
-            // 
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("微软雅黑", 10.5F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.Color.Black;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.Gold;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.Color.Red;
-            this.value.DefaultCellStyle = dataGridViewCellStyle2;
-            this.value.HeaderText = "值";
-            this.value.Name = "value";
-            this.value.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.value.Width = 220;
-            // 
-            // errorText
-            // 
-            dataGridViewCellStyle3.Font = new System.Drawing.Font("微软雅黑", 10.5F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            dataGridViewCellStyle3.ForeColor = System.Drawing.Color.DarkRed;
-            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.Color.White;
-            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.Color.Red;
-            this.errorText.DefaultCellStyle = dataGridViewCellStyle3;
-            this.errorText.HeaderText = "提示";
-            this.errorText.Name = "errorText";
-            this.errorText.ReadOnly = true;
-            this.errorText.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.errorText.Width = 330;
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -334,9 +348,12 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "MainForm";
-            this.Text = "GameModifier(内部测试)";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            this.Text = "GameModifier";
             this.Load += new System.EventHandler(this.MainForm_Load);
+            this.Shown += new System.EventHandler(this.MainForm_Shown);
             this.tabControl.ResumeLayout(false);
+            this.tabPage1.ResumeLayout(false);
             this.tabPage2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.gridView)).EndInit();
             this.contextMenu.ResumeLayout(false);
@@ -376,6 +393,7 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn function;
         private System.Windows.Forms.DataGridViewTextBoxColumn value;
         private System.Windows.Forms.DataGridViewTextBoxColumn errorText;
+        private System.Windows.Forms.WebBrowser webBrowser;
     }
 }
 
